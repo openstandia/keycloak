@@ -540,6 +540,28 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     }
 
     @Override
+    public int getOAuth2DeviceCodeLifespan() {
+        return realm.getOAuth2DeviceCodeLifespan();
+    }
+
+    @Override
+    public void setOAuth2DeviceCodeLifespan(int seconds) {
+        realm.setOAuth2DeviceCodeLifespan(seconds);
+        em.flush();
+    }
+
+    @Override
+    public int getOAuth2DevicePollingInterval() {
+        return realm.getOAuth2DevicePollingInterval();
+    }
+
+    @Override
+    public void setOAuth2DevicePollingInterval(int seconds) {
+        realm.setOAuth2DevicePollingInterval(seconds);
+        em.flush();
+    }
+
+    @Override
     public Map<String, Integer> getUserActionTokenLifespans() {
 
         Map<String, Integer> userActionTokens = new HashMap<>();

@@ -214,6 +214,11 @@ public abstract class AbstractReadOnlyClientStorageAdapter extends AbstractClien
     }
 
     @Override
+    public void setOAuth2DeviceGrantEnabled(boolean oauth2DeviceGrantEnabled) {
+        throw new ReadOnlyException("client is read only for this update");
+    }
+
+    @Override
     public void addClientScope(ClientScopeModel clientScope, boolean defaultScope) {
         throw new ReadOnlyException("client is read only for this update");
     }

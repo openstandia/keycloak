@@ -198,6 +198,8 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             case REGISTER:
                 attributes.put("register", new RegisterBean(formData));
                 break;
+            case LOGIN_OAUTH2_DEVICE_VERIFY_USER_CODE:
+                break;
             case OAUTH_GRANT:
                 attributes.put("oauth",
                         new OAuthGrantBean(accessCode, client, clientScopesRequested));
@@ -509,6 +511,11 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     @Override
     public Response createOAuthGrant() {
         return createResponse(LoginFormsPages.OAUTH_GRANT);
+    }
+
+    @Override
+    public Response createOAuth2DeviceVerifyPage() {
+        return createResponse(LoginFormsPages.LOGIN_OAUTH2_DEVICE_VERIFY_USER_CODE);
     }
 
     @Override

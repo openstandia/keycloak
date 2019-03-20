@@ -270,6 +270,11 @@ public final class OpenshiftSAClientAdapter extends AbstractReadOnlyClientStorag
     }
 
     @Override
+    public boolean isOAuth2DeviceGrantEnabled() {
+        return false;
+    }
+
+    @Override
     public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope, boolean filterByProtocol) {
         if (defaultScope) {
             return Collections.emptyMap();

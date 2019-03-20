@@ -146,6 +146,9 @@ public class ClientEntity {
     @Column(name="SERVICE_ACCOUNTS_ENABLED")
     private boolean serviceAccountsEnabled;
 
+    @Column(name="OAUTH2_DEVICE_GRANT_ENABLED")
+    private boolean oauth2DeviceGrantEnabled;
+
     @Column(name="NODE_REREG_TIMEOUT")
     private int nodeReRegistrationTimeout;
 
@@ -401,6 +404,14 @@ public class ClientEntity {
 
     public void setServiceAccountsEnabled(boolean serviceAccountsEnabled) {
         this.serviceAccountsEnabled = serviceAccountsEnabled;
+    }
+
+    public boolean isOAuth2DeviceGrantEnabled() {
+        return oauth2DeviceGrantEnabled;
+    }
+
+    public void setOAuth2DeviceGrantEnabled(boolean oauth2DeviceGrantEnabled) {
+        this.oauth2DeviceGrantEnabled = oauth2DeviceGrantEnabled;
     }
 
     public int getNodeReRegistrationTimeout() {

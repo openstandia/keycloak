@@ -157,6 +157,9 @@ public interface ClientModel extends ClientScopeModel, RoleContainerModel,  Prot
     boolean isServiceAccountsEnabled();
     void setServiceAccountsEnabled(boolean serviceAccountsEnabled);
 
+    boolean isOAuth2DeviceGrantEnabled();
+    void setOAuth2DeviceGrantEnabled(boolean oauth2DeviceGrantEnabled);
+
     RealmModel getRealm();
 
     /**

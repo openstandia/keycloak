@@ -18,6 +18,7 @@ package org.keycloak.services.resources;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.TokenVerifier;
 import org.keycloak.authentication.AuthenticationFlowException;
@@ -36,6 +37,7 @@ import org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticato
 import org.keycloak.authentication.authenticators.broker.util.PostBrokerLoginConstants;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
+import org.keycloak.authentication.authenticators.client.ClientAuthUtil;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.VerificationException;
@@ -54,6 +56,8 @@ import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.OAuth2DeviceCodeModel;
+import org.keycloak.models.OAuth2DeviceTokenStoreProvider;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserConsentModel;
 import org.keycloak.models.UserModel;
@@ -65,10 +69,12 @@ import org.keycloak.protocol.AuthorizationEndpointBase;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocol.Error;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+import org.keycloak.protocol.oidc.endpoints.OAuth2DeviceAuthorizationEndpoint;
 import org.keycloak.protocol.oidc.utils.OIDCResponseMode;
 import org.keycloak.protocol.oidc.utils.OIDCResponseType;
 import org.keycloak.representations.JsonWebToken;
 import org.keycloak.services.ErrorPage;
+import org.keycloak.services.ErrorPageException;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
@@ -122,6 +128,7 @@ public class LoginActionsService {
 
     public static final String SESSION_CODE = "session_code";
     public static final String AUTH_SESSION_ID = "auth_session_id";
+    public static final String USER_CODE = "user_code";
 
     private RealmModel realm;
 
@@ -796,6 +803,76 @@ public class LoginActionsService {
         return Response.status(302).location(redirect).build();
     }
 
+   /**
+     * Verifying user code page. You should not invoked this directly!
+     *
+     * @param formData
+     * @return
+     */
+    @Path("verification")
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response processOAuth2DeviceVerification(final MultivaluedMap<String, String> formData) {
+        event.event(EventType.OAUTH2_DEVICE_VERIFY_USER_CODE);
+
+        String code = formData.getFirst(SESSION_CODE);
+        String clientId = session.getContext().getUri().getQueryParameters().getFirst(Constants.CLIENT_ID);
+        String tabId = session.getContext().getUri().getQueryParameters().getFirst(Constants.TAB_ID);
+        SessionCodeChecks checks = checksForCode(null, code, null, clientId, tabId, REQUIRED_ACTION);
+        if (!checks.verifyRequiredAction(AuthenticationSessionModel.Action.USER_CODE_VERIFICATION.name())) {
+            return checks.getResponse();
+        }
+
+        AuthenticationSessionModel authSession = checks.getAuthenticationSession();
+
+        initLoginEvent(authSession);
+
+        UserModel user = authSession.getAuthenticatedUser();
+
+        // Cancelled
+        if (formData.containsKey("cancel")) {
+            LoginProtocol protocol = session.getProvider(LoginProtocol.class, authSession.getProtocol());
+            protocol.setRealm(realm)
+                    .setHttpHeaders(headers)
+                    .setUriInfo(session.getContext().getUri())
+                    .setEventBuilder(event);
+            Response response = protocol.sendError(authSession, Error.CANCELLED_BY_USER);
+            event.error(Errors.REJECTED_BY_USER);
+            return response;
+        }
+
+        // Submitted user code
+        String userCode = formData.getFirst(USER_CODE);
+        if (userCode == null) {
+            event.error(Errors.INVALID_OAUTH2_USER_CODE);
+            return AuthenticationManager.createOAuth2DeviceVerificationPage(session, authSession,
+                    Messages.OAUTH2_DEVICE_MISSING_USER_CODE);
+        }
+
+        OAuth2DeviceTokenStoreProvider store = session.getProvider(OAuth2DeviceTokenStoreProvider.class);
+
+        OAuth2DeviceCodeModel deviceCodeModel = store.get(realm, userCode);
+        if (deviceCodeModel == null) {
+            event.error(Errors.INVALID_OAUTH2_USER_CODE);
+            return AuthenticationManager.createOAuth2DeviceVerificationPage(session, authSession,
+                    Messages.INVALID_USER_CODE);
+        }
+
+        // Create new session with requested clientId and scopes from device
+        OAuth2DeviceAuthorizationEndpoint endpoint = new OAuth2DeviceAuthorizationEndpoint(realm, event);
+        ResteasyProviderFactory.getInstance().injectProperties(endpoint);
+
+        AuthenticationSessionModel newAuthSession = endpoint.attachDeviceClient(authSession, deviceCodeModel);
+        new AuthenticationSessionManager(session).removeAuthenticationSession(realm, authSession, true);
+
+        // Verification OK
+        newAuthSession.setAuthNote(OIDCLoginProtocol.OAUTH2_DEVICE_VERIFIED_USER_CODE, userCode);
+
+        event.success();
+
+        String nextAction = AuthenticationManager.nextRequiredAction(session, newAuthSession, clientConnection, request, session.getContext().getUri(), event);
+        return AuthenticationManager.redirectToRequiredActions(session, realm, newAuthSession, session.getContext().getUri(), nextAction);
+    }
 
     /**
      * OAuth grant page.  You should not invoked this directly!

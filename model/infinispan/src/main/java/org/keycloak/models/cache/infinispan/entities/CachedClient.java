@@ -66,6 +66,7 @@ public class CachedClient extends AbstractRevisioned implements InRealm {
     protected boolean implicitFlowEnabled;
     protected boolean directAccessGrantsEnabled;
     protected boolean serviceAccountsEnabled;
+    protected boolean oauth2DeviceGrantEnabled;
     protected int nodeReRegistrationTimeout;
     protected Map<String, Integer> registeredNodes;
     protected List<String> defaultClientScopesIds;
@@ -107,6 +108,7 @@ public class CachedClient extends AbstractRevisioned implements InRealm {
         implicitFlowEnabled = model.isImplicitFlowEnabled();
         directAccessGrantsEnabled = model.isDirectAccessGrantsEnabled();
         serviceAccountsEnabled = model.isServiceAccountsEnabled();
+        oauth2DeviceGrantEnabled = model.isOAuth2DeviceGrantEnabled();
 
         nodeReRegistrationTimeout = model.getNodeReRegistrationTimeout();
         registeredNodes = new TreeMap<>(model.getRegisteredNodes());
@@ -235,6 +237,10 @@ public class CachedClient extends AbstractRevisioned implements InRealm {
 
     public boolean isServiceAccountsEnabled() {
         return serviceAccountsEnabled;
+    }
+
+    public boolean isOAuth2DeviceGrantEnabled() {
+        return oauth2DeviceGrantEnabled;
     }
 
     public int getNodeReRegistrationTimeout() {

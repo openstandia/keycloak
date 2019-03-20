@@ -230,4 +230,10 @@ public class Messages {
     public static final String DELEGATION_FAILED = "delegationFailedMessage";
     public static final String DELEGATION_FAILED_HEADER = "delegationFailedHeader";
 
+    // OAuth2 device grant
+    public static final String OAUTH2_DEVICE_GRANT_DISABLED = "oauth2DeviceGrantDisabledMessage";
+    public static final String OAUTH2_DEVICE_VERIFY_USER_CODE = "oauth2DeviceVerifyUserCodeMessage";
+    public static final String OAUTH2_DEVICE_MISSING_USER_CODE = "oauth2DeviceMissingUserCodeMessage";
+    public static final String INVALID_USER_CODE = "invalidUserCodeMessage";
+    public static final String EXPIRED_USER_CODE = "expiredUserCodeMessage";
 }

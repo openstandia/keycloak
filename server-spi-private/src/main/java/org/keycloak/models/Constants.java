@@ -33,6 +33,7 @@ public interface Constants {
     String ACCOUNT_MANAGEMENT_CLIENT_ID = "account";
     String BROKER_SERVICE_CLIENT_ID = "broker";
     String REALM_MANAGEMENT_CLIENT_ID = "realm-management";
+    String OAUTH2_DEVICE_SERVICE_CLIENT_ID = "oauth2-device";
 
     Collection<String> defaultClients = Arrays.asList(ACCOUNT_MANAGEMENT_CLIENT_ID, ADMIN_CLI_CLIENT_ID, BROKER_SERVICE_CLIENT_ID, REALM_MANAGEMENT_CLIENT_ID, ADMIN_CONSOLE_CLIENT_ID);
 

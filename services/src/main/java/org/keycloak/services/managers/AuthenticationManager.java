@@ -61,6 +61,7 @@ import org.keycloak.models.utils.SystemClientUtil;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocol.Error;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
+import org.keycloak.protocol.oidc.endpoints.OAuth2DeviceAuthorizationEndpoint;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.Urls;
@@ -506,7 +507,7 @@ public class AuthenticationManager {
             UserModel user = userSession.getUser();
             logger.debugv("Logging out: {0} ({1})", user.getUsername(), userSession.getId());
         }
-        
+
         if (userSession.getState() != UserSessionModel.State.LOGGING_OUT) {
             userSession.setState(UserSessionModel.State.LOGGING_OUT);
         }
@@ -840,7 +841,7 @@ public class AuthenticationManager {
         String actionTokenKeyToInvalidate = authSession.getAuthNote(INVALIDATE_ACTION_TOKEN);
         if (actionTokenKeyToInvalidate != null) {
             ActionTokenKeyModel actionTokenKey = DefaultActionTokenKey.from(actionTokenKeyToInvalidate);
-            
+
             if (actionTokenKey != null) {
                 ActionTokenStoreProvider actionTokenStore = session.getProvider(ActionTokenStoreProvider.class);
                 actionTokenStore.put(actionTokenKey, null); // Token is invalidated
@@ -893,6 +894,12 @@ public class AuthenticationManager {
             return authSession.getRequiredActions().iterator().next();
         }
 
+        // If OAuth2 device grant is running, the authenticated user who finished all required actions
+        // must be verified by user code before consenting
+        if (isOAuth2DeviceVerificationRequired(authSession)) {
+            return CommonClientSessionModel.Action.USER_CODE_VERIFICATION.name();
+        }
+
         if (client.isConsentRequired()) {
 
             UserConsentModel grantedConsent = getEffectiveGrantedConsent(session, authSession);
@@ -914,6 +921,13 @@ public class AuthenticationManager {
 
 
     private static UserConsentModel getEffectiveGrantedConsent(KeycloakSession session, AuthenticationSessionModel authSession) {
+        // https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15#section-5.4
+        // The spec says "it is RECOMMENDED to inform the user that they are authorizing a device during the user interaction step",
+        // so we ignore existing persistent consent to display the consent screen again.
+        if (isOAuth2DeviceVerification(authSession)) {
+            return null;
+        }
+
         // If prompt=consent, we ignore existing persistent consent
         String prompt = authSession.getClientNote(OIDCLoginProtocol.PROMPT_PARAM);
         if (TokenUtil.hasPrompt(prompt, OIDCLoginProtocol.PROMPT_VALUE_CONSENT)) {
@@ -951,6 +965,12 @@ public class AuthenticationManager {
         action = executionActions(session, authSession, request, event, realm, user, requiredActions);
         if (action != null) return action;
 
+        // If OAuth2 device grant is running, the authenticated user who finished all required actions
+        // must be verified by user code before consenting
+        if (isOAuth2DeviceVerificationRequired(authSession)) {
+            return createOAuth2DeviceVerificationPage(session, authSession);
+        }
+
         if (client.isConsentRequired()) {
 
             UserConsentModel grantedConsent = getEffectiveGrantedConsent(session, authSession);
@@ -980,6 +1000,43 @@ public class AuthenticationManager {
         }
         return null;
 
+    }
+
+    public static boolean isOAuth2DeviceVerification(final AuthenticationSessionModel authSession) {
+        String authType = authSession.getAuthNote(Details.AUTH_TYPE);
+        return authType != null && authType.equals(OAuth2DeviceAuthorizationEndpoint.OAUTH2_DEVICE_AUTH_TYPE);
+    }
+
+    public static boolean isOAuth2DeviceVerificationRequired(final AuthenticationSessionModel authSession) {
+        return isOAuth2DeviceVerification(authSession) &&
+                authSession.getAuthNote(OIDCLoginProtocol.OAUTH2_DEVICE_VERIFIED_USER_CODE) == null;
+    }
+
+    public static Response createOAuth2DeviceVerificationPage(final KeycloakSession session, final AuthenticationSessionModel authSession) {
+        return createOAuth2DeviceVerificationPage(session, authSession, null);
+    }
+
+    public static Response createOAuth2DeviceVerificationPage(final KeycloakSession session, final AuthenticationSessionModel authSession, String errorMessage) {
+        final RealmModel realm = authSession.getRealm();
+
+        String execution = AuthenticatedClientSessionModel.Action.USER_CODE_VERIFICATION.name();
+
+        ClientSessionCode<AuthenticationSessionModel> accessCode = new ClientSessionCode<>(session, realm, authSession);
+        authSession.getParentSession().setTimestamp(Time.currentTime());
+
+        accessCode.setAction(AuthenticatedClientSessionModel.Action.REQUIRED_ACTIONS.name());
+        authSession.setAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION, execution);
+
+        LoginFormsProvider provider = session.getProvider(LoginFormsProvider.class)
+                .setAuthenticationSession(authSession)
+                .setExecution(execution)
+                .setClientSessionCode(accessCode.getOrGenerateCode());
+
+        if (errorMessage != null) {
+            provider = provider.setError(errorMessage);
+        }
+
+        return provider.createOAuth2DeviceVerifyPage();
     }
 
     private static List<ClientScopeModel> getClientScopesToApproveOnConsentScreen(RealmModel realm, UserConsentModel grantedConsent,

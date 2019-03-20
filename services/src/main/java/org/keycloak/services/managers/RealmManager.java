@@ -450,6 +450,22 @@ public class RealmManager {
         }
     }
 
+    public void setupOAuth2DeviceService(RealmModel realm) {
+        ClientModel client = realm.getClientByClientId(Constants.OAUTH2_DEVICE_SERVICE_CLIENT_ID);
+        if (client == null) {
+            client = KeycloakModelUtils.createClient(realm, Constants.OAUTH2_DEVICE_SERVICE_CLIENT_ID);
+            client.setEnabled(true);
+            client.setName("${client_" + Constants.OAUTH2_DEVICE_SERVICE_CLIENT_ID + "}");
+            client.setFullScopeAllowed(false);
+            client.setStandardFlowEnabled(false);
+            client.setImplicitFlowEnabled(false);
+            client.setServiceAccountsEnabled(false);
+            client.setDirectAccessGrantsEnabled(false);
+            client.setOAuth2DeviceGrantEnabled(true);
+            client.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        }
+    }
+
     public RealmModel importRealm(RealmRepresentation rep) {
         return importRealm(rep, false);
     }
@@ -488,6 +504,7 @@ public class RealmManager {
 
         if (!hasBrokerClient(rep)) setupBrokerService(realm);
         if (!hasAdminConsoleClient(rep)) setupAdminConsole(realm);
+        if (!hasOAuth2DeviceClient(rep)) setupOAuth2DeviceService(realm);
 
         boolean postponeAdminCliSetup = false;
         if (!hasAdminCliClient(rep)) {
@@ -597,6 +614,10 @@ public class RealmManager {
 
     private boolean hasAdminCliClient(RealmRepresentation rep) {
         return hasClient(rep, Constants.ADMIN_CLI_CLIENT_ID);
+    }
+
+    private boolean hasOAuth2DeviceClient(RealmRepresentation rep) {
+        return hasClient(rep, Constants.OAUTH2_DEVICE_SERVICE_CLIENT_ID);
     }
 
     private boolean hasClient(RealmRepresentation rep, String clientId) {

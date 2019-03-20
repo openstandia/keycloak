@@ -41,6 +41,7 @@ public class ClientTemplateRepresentation {
     protected Boolean implicitFlowEnabled;
     protected Boolean directAccessGrantsEnabled;
     protected Boolean serviceAccountsEnabled;
+    protected Boolean deviceGrantEnabled;
     protected Boolean publicClient;
     protected Boolean frontchannelLogout;
     protected Map<String, String> attributes;
@@ -142,6 +143,14 @@ public class ClientTemplateRepresentation {
 
     public void setServiceAccountsEnabled(Boolean serviceAccountsEnabled) {
         this.serviceAccountsEnabled = serviceAccountsEnabled;
+    }
+
+    public Boolean isDeviceGrantEnabled() {
+        return deviceGrantEnabled;
+    }
+
+    public void setDeviceGrantEnabled(Boolean deviceGrantEnabled) {
+        this.deviceGrantEnabled = deviceGrantEnabled;
     }
 
     public Boolean isPublicClient() {

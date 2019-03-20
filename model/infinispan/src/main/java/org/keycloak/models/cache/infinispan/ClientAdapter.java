@@ -578,6 +578,18 @@ public class ClientAdapter implements ClientModel, CachedObject {
     }
 
     @Override
+    public boolean isOAuth2DeviceGrantEnabled() {
+        if (isUpdated()) return updated.isOAuth2DeviceGrantEnabled();
+        return cached.isOAuth2DeviceGrantEnabled();
+    }
+
+    @Override
+    public void setOAuth2DeviceGrantEnabled(boolean oauth2DeviceGrantEnabled) {
+        getDelegateForUpdate();
+        updated.setOAuth2DeviceGrantEnabled(oauth2DeviceGrantEnabled);
+    }
+
+    @Override
     public RoleModel getRole(String name) {
         return cacheSession.getClientRole(getRealm(), this, name);
     }

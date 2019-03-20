@@ -281,7 +281,7 @@ public class OIDCLoginProtocol implements LoginProtocol {
 
     @Override
     public Response sendError(AuthenticationSessionModel authSession, Error error) {
-        if (AuthenticationManager.isOAuth2DeviceVerificationRequired(authSession)) {
+        if (isOAuth2DeviceVerificationRequired(authSession)) {
             new AuthenticationSessionManager(session).removeAuthenticationSession(realm, authSession, true);
             return session.getProvider(LoginFormsProvider.class)
                     .setError(translateError(error))
@@ -299,6 +299,10 @@ public class OIDCLoginProtocol implements LoginProtocol {
             redirectUri.addParam(OAuth2Constants.STATE, state);
         new AuthenticationSessionManager(session).removeAuthenticationSession(realm, authSession, true);
         return redirectUri.build();
+    }
+
+    private boolean isOAuth2DeviceVerificationRequired(AuthenticationSessionModel authSession) {
+        return authSession.getAuthNote(Details.AUTH_TYPE).equals(OAuth2DeviceAuthorizationEndpoint.OAUTH2_DEVICE_AUTH_TYPE);
     }
 
     private String translateError(Error error) {

@@ -22,7 +22,6 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.AuthorizationService;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.common.Profile;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
@@ -30,6 +29,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.LoginProtocol;
 import org.keycloak.protocol.LoginProtocolFactory;
+import org.keycloak.protocol.oidc.endpoints.OAuth2DeviceAuthorizationEndpoint;
 import org.keycloak.services.clientregistration.ClientRegistrationService;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resource.RealmResourceProvider;
@@ -98,6 +98,10 @@ public class RealmsResource {
 
     public static UriBuilder brokerUrl(UriInfo uriInfo) {
         return uriInfo.getBaseUriBuilder().path(RealmsResource.class).path(RealmsResource.class, "getBrokerService");
+    }
+
+    public static UriBuilder oauth2DeviceVerificationUrl(UriInfo uriInfo) {
+        return uriInfo.getBaseUriBuilder().path(RealmsResource.class).path(RealmsResource.class, "getOAuth2DeviceVerificationService");
     }
 
     public static UriBuilder wellKnownProviderUrl(UriBuilder builder) {
@@ -264,6 +268,18 @@ public class RealmsResource {
         ResteasyProviderFactory.getInstance().injectProperties(service);
 
         return service;
+    }
+
+    @GET
+    @Path("{realm}/device")
+    public Object getOAuth2DeviceVerificationService(@PathParam("realm") String realmName) {
+        RealmModel realm = init(realmName);
+        EventBuilder event = new EventBuilder(realm, session, clientConnection);
+        OAuth2DeviceAuthorizationEndpoint endpoint = new OAuth2DeviceAuthorizationEndpoint(realm, event);
+
+        ResteasyProviderFactory.getInstance().injectProperties(endpoint);
+
+        return endpoint.buildVerificationResponse();
     }
 
     /**

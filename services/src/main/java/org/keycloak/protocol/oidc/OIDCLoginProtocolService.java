@@ -32,11 +32,7 @@ import org.keycloak.jose.jwk.JWKBuilder;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.protocol.oidc.endpoints.AuthorizationEndpoint;
-import org.keycloak.protocol.oidc.endpoints.LoginStatusIframeEndpoint;
-import org.keycloak.protocol.oidc.endpoints.LogoutEndpoint;
-import org.keycloak.protocol.oidc.endpoints.TokenEndpoint;
-import org.keycloak.protocol.oidc.endpoints.UserInfoEndpoint;
+import org.keycloak.protocol.oidc.endpoints.*;
 import org.keycloak.protocol.oidc.ext.OIDCExtProvider;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
@@ -44,13 +40,7 @@ import org.keycloak.services.resources.Cors;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.services.util.CacheControlUtil;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -109,6 +99,16 @@ public class OIDCLoginProtocolService {
         return uriBuilder.path(OIDCLoginProtocolService.class, "auth");
     }
 
+    public static UriBuilder oauth2DeviceVerificationUrl(UriInfo uriInfo) {
+        UriBuilder uriBuilder = tokenServiceBaseUrl(uriInfo);
+        return uriBuilder.path(OIDCLoginProtocolService.class, "oauth2DeviceVerification");
+    }
+
+    public static UriBuilder delegatedUrl(UriInfo uriInfo) {
+        UriBuilder uriBuilder = tokenServiceBaseUrl(uriInfo);
+        return uriBuilder.path(OIDCLoginProtocolService.class, "kcinitBrowserLoginComplete");
+    }
+
     public static UriBuilder tokenUrl(UriBuilder baseUriBuilder) {
         UriBuilder uriBuilder = tokenServiceBaseUrl(baseUriBuilder);
         return uriBuilder.path(OIDCLoginProtocolService.class, "token");
@@ -144,6 +144,18 @@ public class OIDCLoginProtocolService {
     @Path("auth")
     public Object auth() {
         AuthorizationEndpoint endpoint = new AuthorizationEndpoint(realm, event);
+        ResteasyProviderFactory.getInstance().injectProperties(endpoint);
+        return endpoint;
+    }
+
+    /**
+     * OAuth2 device authorization endpoint
+     */
+    @Path("device/auth")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object oauth2DeviceAuth() {
+        OAuth2DeviceAuthorizationEndpoint endpoint = new OAuth2DeviceAuthorizationEndpoint(realm, event);
         ResteasyProviderFactory.getInstance().injectProperties(endpoint);
         return endpoint;
     }

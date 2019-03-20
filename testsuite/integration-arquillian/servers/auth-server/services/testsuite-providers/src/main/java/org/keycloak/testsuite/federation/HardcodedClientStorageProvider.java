@@ -220,6 +220,11 @@ public class HardcodedClientStorageProvider implements ClientStorageProvider, Cl
         }
 
         @Override
+        public boolean isOAuth2DeviceGrantEnabled() {
+            return false;
+        }
+
+        @Override
         public Map<String, ClientScopeModel> getClientScopes(boolean defaultScope, boolean filterByProtocol) {
             if (defaultScope) {
                 ClientScopeModel rolesScope = KeycloakModelUtils.getClientScopeByName(realm, OIDCLoginProtocolFactory.ROLES_SCOPE);

@@ -630,6 +630,16 @@ public class ClientAdapter implements ClientModel, JpaModel<ClientEntity> {
     }
 
     @Override
+    public boolean isOAuth2DeviceGrantEnabled() {
+        return entity.isOAuth2DeviceGrantEnabled();
+    }
+
+    @Override
+    public void setOAuth2DeviceGrantEnabled(boolean oauth2DeviceGrantEnabled) {
+        entity.setOAuth2DeviceGrantEnabled(oauth2DeviceGrantEnabled);
+    }
+
+    @Override
     public RoleModel getRole(String name) {
         return session.realms().getClientRole(realm, this, name);
     }

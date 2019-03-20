@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Red Hat, Inc. and/or its affiliates
+# Copyright 2017 Red Hat, Inc. and/or its affiliates
 # and other contributors as indicated by the @author tags.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,4 @@
 # limitations under the License.
 #
 
-org.keycloak.authentication.requiredactions.UpdatePassword
-org.keycloak.authentication.requiredactions.UpdateProfile
-org.keycloak.authentication.requiredactions.UpdateTotp
-org.keycloak.authentication.requiredactions.VerifyEmail
-org.keycloak.authentication.requiredactions.TermsAndConditions
+org.keycloak.models.sessions.infinispan.InfinispanOAuth2DeviceTokenStoreProviderFactory

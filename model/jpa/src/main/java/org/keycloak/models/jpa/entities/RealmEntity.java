@@ -125,6 +125,10 @@ public class RealmEntity {
     protected int accessCodeLifespanUserAction;
     @Column(name="LOGIN_LIFESPAN")
     protected int accessCodeLifespanLogin;
+    @Column(name="OAUTH2_DEVICE_CODE_LIFESPAN")
+    protected int oauth2DeviceCodeLifespan;
+    @Column(name="OAUTH2_DEVICE_POLLING_INTERVAL")
+    protected int oauth2DevicePollingInterval;
     @Column(name="NOT_BEFORE")
     protected int notBefore;
 
@@ -435,6 +439,22 @@ public class RealmEntity {
 
     public void setAccessCodeLifespanLogin(int accessCodeLifespanLogin) {
         this.accessCodeLifespanLogin = accessCodeLifespanLogin;
+    }
+
+    public int getOAuth2DeviceCodeLifespan() {
+        return oauth2DeviceCodeLifespan;
+    }
+
+    public void setOAuth2DeviceCodeLifespan(int oauth2DeviceCodeLifespan) {
+        this.oauth2DeviceCodeLifespan = oauth2DeviceCodeLifespan;
+    }
+
+    public int getOAuth2DevicePollingInterval() {
+        return oauth2DevicePollingInterval;
+    }
+
+    public void setOAuth2DevicePollingInterval(int oauth2DevicePollingInterval) {
+        this.oauth2DevicePollingInterval = oauth2DevicePollingInterval;
     }
 
     public Collection<RequiredCredentialEntity> getRequiredCredentials() {
