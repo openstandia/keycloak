@@ -34,4 +34,9 @@ public interface RealmAttributes {
     String OFFLINE_SESSION_MAX_LIFESPAN_ENABLED = "offlineSessionMaxLifespanEnabled";
 
     String OFFLINE_SESSION_MAX_LIFESPAN = "offlineSessionMaxLifespan";
+
+    // OAuth 2.0 Device Authorization Grant
+    String OAUTH2_DEVICE_CODE_LIFESPAN = "oauth2DeviceCodeLifespan";
+
+    String OAUTH2_DEVICE_POLLING_INTERVAL = "oauth2DevicePollingInterval";
 }

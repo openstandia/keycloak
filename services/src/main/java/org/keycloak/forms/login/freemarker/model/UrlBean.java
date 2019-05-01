@@ -97,6 +97,14 @@ public class UrlBean {
         return Urls.realmOauthAction(baseURI, realm).toString();
     }
 
+    public String getOauth2DeviceVerificationAction() {
+        if (this.actionuri != null) {
+            return this.actionuri.getPath();
+        }
+
+        return Urls.realmOAuth2DeviceVerificationAction(baseURI, realm).toString();
+    }
+
     public String getResourcesPath() {
         URI uri = Urls.themeRoot(baseURI);
         return uri.getPath() + "/" + theme.getType().toString().toLowerCase() +"/" + theme.getName();

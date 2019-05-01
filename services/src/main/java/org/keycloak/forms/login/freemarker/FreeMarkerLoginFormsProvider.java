@@ -512,6 +512,11 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     }
 
     @Override
+    public Response createOAuth2DeviceVerifyUserCodePage() {
+        return createResponse(LoginFormsPages.LOGIN_OAUTH2_DEVICE_VERIFY_USER_CODE);
+    }
+
+    @Override
     public Response createCode() {
         return createResponse(LoginFormsPages.CODE);
     }

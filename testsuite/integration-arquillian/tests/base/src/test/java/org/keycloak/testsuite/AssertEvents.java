@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -132,6 +133,34 @@ public class AssertEvents implements TestRule {
                 .detail(Details.REFRESH_TOKEN_TYPE, TokenUtil.TOKEN_TYPE_REFRESH)
                 .detail(Details.CLIENT_AUTH_METHOD, ClientIdAndSecretAuthenticator.PROVIDER_ID)
                 .session(sessionId);
+    }
+
+    public ExpectedEvent expectDeviceVerifyUserCode(String clientId) {
+        return expect(EventType.OAUTH2_DEVICE_VERIFY_USER_CODE)
+                .user((String) null)
+                .client(clientId)
+                .detail(Details.CODE_ID, isUUID());
+    }
+
+    public ExpectedEvent expectDeviceLogin(String clientId, String codeId, String userId) {
+        return expect(EventType.LOGIN)
+                .user(userId)
+                .client(clientId)
+                .detail(Details.CODE_ID, codeId)
+                .session(codeId);
+//                .session((String) null);
+    }
+
+    public ExpectedEvent expectDeviceCodeToToken(String clientId, String codeId, String userId) {
+        return expect(EventType.OAUTH2_DEVICE_CODE_TO_TOKEN)
+                .client(clientId)
+                .user(userId)
+                .detail(Details.CODE_ID, codeId)
+                .detail(Details.TOKEN_ID, isUUID())
+                .detail(Details.REFRESH_TOKEN_ID, isUUID())
+                .detail(Details.REFRESH_TOKEN_TYPE, TokenUtil.TOKEN_TYPE_REFRESH)
+                .detail(Details.CLIENT_AUTH_METHOD, ClientIdAndSecretAuthenticator.PROVIDER_ID)
+                .session(codeId);
     }
 
     public ExpectedEvent expectRefresh(String refreshTokenId, String sessionId) {
