@@ -300,6 +300,33 @@ public class DocumentUtil {
     }
 
     /**
+     * Stream a DOM Node as a String
+     *
+     * @param node
+     *
+     * @return
+     *
+     * @throws ProcessingException
+     * @throws TransformerFactoryConfigurationError
+     * @throws TransformerException
+     */
+    public static String getNodeAsString(Node node) throws ConfigurationException, ProcessingException {
+        Source source = new DOMSource(node);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        Result streamResult = new StreamResult(baos);
+        // Write the DOM document to the stream
+        Transformer transformer = TransformerUtil.getTransformer();
+        try {
+            transformer.transform(source, streamResult);
+        } catch (TransformerException e) {
+            throw logger.processingError(e);
+        }
+
+        return new String(baos.toByteArray(), GeneralConstants.SAML_CHARSET);
+    }
+
+    /**
      * Get a {@link Source} given a {@link Document}
      *
      * @param doc
