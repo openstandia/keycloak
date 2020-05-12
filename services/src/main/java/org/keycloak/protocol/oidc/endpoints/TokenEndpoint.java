@@ -914,7 +914,7 @@ public class TokenEndpoint {
 
         switch (requestedTokenType) {
             case OAuth2Constants.ACCESS_TOKEN_TYPE:
-            case OAuth2Constants.ID_TOKEN_TYPE:
+            case OAuth2Constants.REFRESH_TOKEN_TYPE:
                 return exchangeClientToOIDCClient(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope);
             case OAuth2Constants.SAML2_TOKEN_TYPE:
                 return exchangeClientToSAML2Client(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope);
